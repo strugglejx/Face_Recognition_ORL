@@ -1,6 +1,7 @@
 from sklearn.decomposition import PCA, KernelPCA
-# import numpy as np
 import cupy as np
+import numpy as npy
+
 
 class myPCA(object):
 
@@ -20,23 +21,30 @@ class myPCA(object):
         self.pca_vector = None
         self.trainset_project = None
 
+    def __cov(self, a):
+        a = cp.asarray(a)
+        mean = np.mean(a, axis=1)
+        mid = a.T - mean
+        res = np.matmul(mid.T, mid) / a.shape[0]
+        return res
+
     def __pca(self, XMat, k):
         average = np.mean(XMat, axis=0)
         m, n = np.shape(XMat)  # m: samples_nums, n: features
         data_adjust = XMat - average
-        cov_x = np.cov(data_adjust.T)  # 计算协方差矩阵
-        feat_value, feat_vec = np.linalg.eig(cov_x)  # 求解协方差矩阵的特征值和特征向量
+        cov_x = self.__cov(data_adjust.T)  # 计算协方差矩阵
+        feat_value, feat_vec = npy.linalg.eig(cov_x.get())  # 求解协方差矩阵的特征值和特征向量
         index = np.argsort(-feat_value)  # 依照featValue进行从大到小排序
         if k > n:
             print("k must lower than feature number")
             return
         else:
             selectVec = feat_vec[:, index[:k]]  # 所以这里须要进行转置
-            finalData = np.matmul(data_adjust, selectVec)
-        return finalData, selectVec
+            finalData = np.matmul(data_adjust, np.asarray(selectVec))  # cupy
+        return finalData, np.asarray(selectVec)
 
     def __project(self, set, mean):
-        y = np.matmul(self.pca_vector.transpose(), set.transpose()-mean)
+        y = np.matmul(self.pca_vector.transpose(), set.transpose() - mean)
         return y
 
     def train(self):
@@ -57,17 +65,18 @@ class myPCA(object):
 
         pred = np.asarray(pred)
         # print(pred)
-        acc = np.sum((pred == self.testslabel))/len(pred)
+        acc = np.sum((pred == self.testslabel)) / len(pred)
         print("accuracy: ", acc)
         return pred, acc
+
 
 if __name__ == "__main__":
     # test
 
-    train_set = np.asarray([[1,2,3,4,5], [2,3,4,5,6], [6,7,8,9,10], [6,5,4,3,2], [8,7,6,5,4]])
-    train_label = np.asarray([0,0,0,1,1])
-    test_set = np.asarray([[4,5,6,7,8], [5,6,7,8,9], [7,6,5,4,3], [1,3,5,7,9]])
-    test_label = np.asarray([0,0,1,0])
+    train_set = np.asarray([[1, 2, 3, 4, 5], [2, 3, 4, 5, 6], [6, 7, 8, 9, 10], [6, 5, 4, 3, 2], [8, 7, 6, 5, 4]])
+    train_label = np.asarray([0, 0, 0, 1, 1])
+    test_set = np.asarray([[4, 5, 6, 7, 8], [5, 6, 7, 8, 9], [7, 6, 5, 4, 3], [1, 3, 5, 7, 9]])
+    test_label = np.asarray([0, 0, 1, 0])
 
     # PCA
     mthd_PCA = myPCA(trainset=train_set,
