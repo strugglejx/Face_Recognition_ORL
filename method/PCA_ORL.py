@@ -1,5 +1,6 @@
 from sklearn.decomposition import PCA, KernelPCA
 import numpy as np
+import time
 
 class myPCA(object):
 
@@ -74,6 +75,7 @@ class myPCA(object):
 
 
     def test(self):
+        s = time.time()
         test_mean = np.mean(self.testset, axis=1)
         y = self.__project(self.testset, test_mean)
         pred = []
@@ -88,6 +90,9 @@ class myPCA(object):
         # print(pred)
         acc = np.sum((pred == self.testslabel))/len(pred)
         print("accuracy: ", acc)
+        e = time.time()
+        tim = e - s
+        print("Total time of PAC_ORL test: ", tim)
         return pred, acc
 
 if __name__ == "__main__":
