@@ -40,23 +40,38 @@ class CNN(nn.Module):
 
 
     def forward(self, x):
+        print(x.shape)
         outputs = self.conv1(x)
+        print(outputs.shape)
         outputs = F.relu((outputs))
+        print(outputs.shape)
         outputs = self.bn1(outputs)
+        print(outputs.shape)
         outputs = F.max_pool2d(outputs, 2)
+        print(outputs.shape)
 
         outputs = self.conv2(outputs)
+        print(outputs.shape)
         outputs = F.relu((outputs))
+        print(outputs.shape)
         outputs = self.bn2(outputs)
+        print(outputs.shape)
         outputs = F.max_pool2d(outputs, 2)
+        print(outputs.shape)
 
         outputs = self.conv3(outputs)
+        print(outputs.shape)
         outputs = F.relu((outputs))
+        print(outputs.shape)
         outputs = self.bn3(outputs)
+        print(outputs.shape)
         outputs = F.max_pool2d(outputs, 2)
+        print(outputs.shape)
 
         outputs = outputs.view(outputs.size(0), -1)
+        print(outputs.shape)
         outputs = self.dense1(outputs)
+        print(outputs.shape)
         return outputs
 
 
