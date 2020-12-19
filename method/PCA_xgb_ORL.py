@@ -3,6 +3,7 @@ from sklearn.metrics import accuracy_score, precision_score
 from sklearn.model_selection import StratifiedKFold
 from method.PCA_ORL import myPCA
 import xgboost as xgb
+import time
 
 
 in_features = 40
@@ -17,6 +18,7 @@ def xgb_func(data_tv, label_tv):
                              shuffle=True,
                              random_state=200)
 
+    test_time = []
     pcs_list = []
     count = 0
     for train_index, val_index in folder.split(X=data_tv, y=label_tv):
@@ -39,7 +41,7 @@ def xgb_func(data_tv, label_tv):
                   'gamma': 0.4,
                   'seed': 0,
                   'nthread': 8,
-                  'silent': 0,
+                  'silent': True,
                   'reg_alpha': 0.1,
                   'num_class': 40}
 
@@ -47,8 +49,12 @@ def xgb_func(data_tv, label_tv):
 
         # val
         bst = xgb.train(params, dl_train, num_boost_round=500, evals=watchlist)
+        s = time.time()
         pred_val = bst.predict(dl_val)
-        # pred_val = (pred_val >= 0.6) * 1
+        e = time.time()
+        tim = e-s
+        test_time.append(tim)
+        print("Total time of PAC_xgb_ORL test: ", tim)
         precision = precision_score(y_pred=pred_val, y_true=label_val, average='macro')
         pcs_list.append(precision)
         print("cv {}  precision: {}".format(count, precision))
@@ -57,7 +63,7 @@ def xgb_func(data_tv, label_tv):
 
     print("precision in cv: ", pcs_list)
     print("mean precision: ", sum(pcs_list)/nfold)
-
+    print("mean test time: ", sum(test_time)/len((test_time)))
 
 
 

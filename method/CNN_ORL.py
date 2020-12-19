@@ -3,18 +3,20 @@ import torch.nn as nn
 import torch.nn.functional as F
 import numpy as np
 from sklearn.metrics import accuracy_score
+import time
 import sys
 from method.PCA_ORL import myPCA
+
 
 in_features = 40
 hidden_nums = 40
 out_features = 40
 epoch_nums = 50
 
-class PCA_CNN(nn.Module):
+class CNN(nn.Module):
 
     def __init__(self, in_features, out_features, hidden_nums):
-        super(PCA_CNN, self).__init__()
+        super(CNN, self).__init__()
         self.conv1 = nn.Conv2d(in_channels=1,
                                out_channels=4,
                                kernel_size=(3, 3),
@@ -52,6 +54,7 @@ class PCA_CNN(nn.Module):
         outputs = F.relu((outputs))
         outputs = self.bn3(outputs)
         outputs = F.max_pool2d(outputs, 2)
+
         outputs = outputs.view(outputs.size(0), -1)
         outputs = self.dense1(outputs)
         return outputs
@@ -68,7 +71,7 @@ def cnn_train_and_test(train_set, train_label, test_set, test_label):
     test_label = torch.from_numpy((test_label)).to("cuda")
 
     # train
-    model = PCA_CNN(in_features, out_features, hidden_nums).cuda()
+    model = CNN(in_features, out_features, hidden_nums).cuda()
     criterion = nn.CrossEntropyLoss()
     optimizer = torch.optim.Adam(model.parameters(), lr=0.001, weight_decay=0.001)
 
@@ -99,7 +102,11 @@ def cnn_train_and_test(train_set, train_label, test_set, test_label):
             test(train_set, train_label, istrainset=True)
             test(test_set, test_label, istrainset=False)
 
+    s = time.time()
     test(train_set, train_label, istrainset=True)
+    e = time.time()
+    tim = e-s
+    print("Total time of CNN_ORL test: ", tim)
     pred, acc = test(test_set, test_label, istrainset=False)
     return pred, acc
 

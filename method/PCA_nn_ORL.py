@@ -3,6 +3,7 @@ import torch.nn as nn
 import numpy as np
 from sklearn.metrics import accuracy_score
 from method.PCA_ORL import myPCA
+import time
 
 in_features = 40
 hidden_nums = 40
@@ -16,11 +17,13 @@ class PCA_NN(nn.Module):
         self.dense1 = nn.Linear(in_features=in_features, out_features=hidden_nums)
         self.activation = nn.ReLU()
         self.dense2 = nn.Linear(in_features=hidden_nums, out_features=out_features)
+        # self.sft = nn.LogSoftmax(dim=0)
 
     def forward(self, x):
         out = self.dense1(x)
         out = self.activation(out)
         out = self.dense2(out)
+        # out = self.sft(out)
         return out
 
 
@@ -61,7 +64,11 @@ def nn_train_and_test(train_set, train_label, test_set, test_label):
             test(train_set, train_label, istrainset=True)
             test(test_set, test_label, istrainset=False)
 
+    s = time.time()
     test(train_set, train_label, istrainset=True)
+    e = time.time()
+    tim = e-s
+    print("Total time of PAC_nn_ORL test: ", tim)
     pred, acc = test(test_set, test_label, istrainset=False)
     return pred, acc
 

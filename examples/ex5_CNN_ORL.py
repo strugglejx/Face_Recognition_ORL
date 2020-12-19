@@ -13,7 +13,7 @@ if __name__ == "__main__":
 
     # PCA_cnn_ORL(cv)
     s = time.time()
-    print("run PCA_cnn_ORL...")
+    print("run CNN_ORL...")
     pred_list = []
     acc_list = []
     kf, all_pic_list, all_label_list = r.read_rt_cv(isflatten=False, test_rate=0.1)
@@ -27,7 +27,8 @@ if __name__ == "__main__":
     pred_list = np.asarray(pred_list)  # predict result of all list
     # result = get_max_id(pred_list)
     # print("result:", result)
-    print("average accuray: ", np.mean(np.asarray(acc_list)))
+    print("accuracy list: ", acc_list)
+    print("average accuracy: ", np.mean(np.asarray(acc_list)))
 
     e = time.time()
     time = e - s

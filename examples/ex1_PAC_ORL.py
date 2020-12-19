@@ -39,7 +39,7 @@ if __name__ == "__main__":
                          n_components=50,
                          isKernel=False)
 
-        mthd_PCA.train(False)
+        mthd_PCA.train(True)
         pred, acc = mthd_PCA.test()
         pred_list.append(pred)
         acc_list.append(acc)

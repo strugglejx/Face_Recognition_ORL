@@ -74,6 +74,46 @@ class myPCA(object):
             self.trainset_project = self.__project(self.trainset, train_mean)
 
 
+    def test_cuda(self):
+        import cupy as cp
+        # tranform numpy.ndarray to cupy.core.core.ndarray
+        self.pca_vector = cp.asarray(self.pca_vector)
+        self.testset = cp.asarray(self.testset)
+        self.trainset_project = cp.asarray(self.trainset_project)
+        self.testslabel = cp.asarray(self.testslabel)
+        self.trainlabel = cp.asarray(self.trainlabel)
+
+        def project(set, mean):
+            y = cp.matmul(self.pca_vector.transpose(), set.transpose() - mean)
+            return y
+
+        s = time.time()
+        test_mean = cp.mean(self.testset, axis=1)
+        y = project(self.testset, test_mean)
+        pred = []
+        for i in range(y.shape[1]):
+            tmp = y[:, i].reshape((y.shape[0], 1))
+            tmp = tmp - self.trainset_project
+            tmp = cp.sum(cp.square(tmp), axis=0).flatten()
+            min_i = cp.argmin(tmp, axis=0)
+            pred.append(self.trainlabel[min_i])
+
+        pred = cp.asarray(pred)
+        # print(pred)
+        acc = cp.sum((pred == self.testslabel))/len(pred)
+        print("accuracy: ", acc)
+        e = time.time()
+        tim = e - s
+        print("Total time of PAC_ORL test: ", tim)
+
+        self.pca_vector = cp.asnumpy(self.pca_vector)
+        self.testset = cp.asnumpy(self.testset)
+        self.trainset_project = cp.asnumpy(self.trainset_project)
+        self.testslabel = cp.asnumpy(self.testslabel)
+        self.trainlabel = cp.asnumpy(self.trainlabel)
+        return pred, acc
+
+
     def test(self):
         s = time.time()
         test_mean = np.mean(self.testset, axis=1)
@@ -94,6 +134,8 @@ class myPCA(object):
         tim = e - s
         print("Total time of PAC_ORL test: ", tim)
         return pred, acc
+
+
 
 if __name__ == "__main__":
     # test
